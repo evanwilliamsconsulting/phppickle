@@ -13,3 +13,5 @@ You may have to adjust your paths somewhat.  This will be fixed on a later relea
 
 Evan Jan Williams
 tech@evanwilliamsconsulting.com
+
+Our website: under development is phpzope.org!
