@@ -1,17 +1,5 @@
 #include "stackitem.h"
 
-StackItem& StackItem::operator=(const StackItem& otherItem)
-{
-	int i = 0;
-	opcode = otherItem.opcode;
-	someInt = otherItem.someInt;
-	someString = otherItem.someString;
-	theMark = otherItem.theMark;
-	lastMark = otherItem.lastMark;
-	someTuple = otherItem.someTuple;
-	someDict = otherItem.someDict;
-	return *this;
-}
 void StackItem::initializeTuple()
 {
 	someTuple = (Tuple*)emalloc(sizeof(Tuple));

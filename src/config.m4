@@ -7,5 +7,5 @@ if test $PHP_PHPZOPE != "no"; then
     PHP_REQUIRE_CXX()
     PHP_SUBST(PHPZOPE_SHARED_LIBADD)
     PHP_ADD_LIBRARY(stdc++, 1, PHPZOPE_SHARED_LIBADD)
-    PHP_NEW_EXTENSION(phpzope, phpzope.cc pickle.cc stackitem.cc tuple.cc dict.cc, $ext_shared)
+    PHP_NEW_EXTENSION(phpzope, phpzope.cc pickle.cc stackitem.cc tuple.cc dict.cc, $ext_shared,-Wall -Werror -std=c11)
 fi

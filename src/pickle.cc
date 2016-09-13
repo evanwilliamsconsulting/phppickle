@@ -374,7 +374,6 @@ int Opcode::fnSHORT_BINSTRING1(ifstream &instream,std::string str1,std::string::
 	it1++;
 	int intCountDown;
 	intCountDown = intBinstring;	
-	__asm__("int3");
 	while (*it1 != '\000' && (it1 != str1.end() || intCountDown > 0))
 	{
 	    shortBinstring.append(sizeof(char),*it1);
@@ -431,7 +430,7 @@ int Opcode::fnGLOBAL(ifstream &instream,std::string str1,std::string::iterator &
 	std::string name;
 	int countNewline = 0;
 	int forward = 1;
-	it1++;
+	//it1++;
 	moduleItem = (StackItem*)emalloc(sizeof(StackItem));
 	char *ptr;
 	char *buf;
@@ -439,8 +438,8 @@ int Opcode::fnGLOBAL(ifstream &instream,std::string str1,std::string::iterator &
 	ptr = buf;
 	int len;
 	len = 0;
-	//while (it1 < str1.end() && *it1 != '\177')
-	while (it1 < str1.end())
+	while (it1 < str1.end() && *it1 != '\177')
+	//while (it1 < str1.end())
         {
 	     *ptr++ = *it1;
 	     len++;

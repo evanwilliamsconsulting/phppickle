@@ -50,6 +50,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 
 	/* fetch the data : retrieve all the rows in the result set */
 
+	this->currentStack = theStack;
 	Pickle *myPickler = new Pickle();
 	int num = 0;
 	std::stringstream parse(state2);
@@ -128,6 +129,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 	    	    theStack.push(*ptrStackItem);
 		    //printf("push\n");
 	            result = (currentOpcode->opfunc)(infile,theString,it,*ptrStackItem,theStack,theMemo);
+
 		    //int someLength = 0;
 		    //someLength=(ptrStackItem->someString).length();
 	            //someLength++;
@@ -349,7 +351,6 @@ PHP_METHOD(PHPZope, returnPickleFile)
 	//ptrStackItem->opcode = '!';
 	stack<StackItem> theStack = phpzope->retrieveCurrentStack();
 	vector<StackItem> theMemo = phpzope->retrieveCurrentMemo();
-	//theStack.push(*ptrStackItem);
 	phpzope->returnPickleFile(theStack,theMemo);
 	char somestring[100];
 	int depth = theStack.size();
@@ -385,7 +386,7 @@ PHP_METHOD(PHPZope, returnPickleFile)
 	    }
 	    stackDepth--;
 	    theStack.pop();
-	    StackItem stackItem = theStack.top();
+	    stackItem = theStack.top();
 	} while (stackDepth > 1 );
 	add_assoc_zval(return_value,"result",mysubarray); 
 

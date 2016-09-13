@@ -39,7 +39,16 @@ class StackItem {
 	    someTuple = otherItem.someTuple;
 	    someDict = otherItem.someDict;
 	}
-	StackItem& operator= (const StackItem &otherItem);
+	StackItem& operator= (const StackItem &otherItem)
+	{
+	    opcode = otherItem.opcode;
+	    someInt = otherItem.someInt;
+	    someString = otherItem.someString;
+	    theMark = otherItem.theMark;
+	    lastMark = otherItem.lastMark;
+	    someTuple = otherItem.someTuple;
+	    someDict = otherItem.someDict;
+	}
 	void initializeTuple();
 	void initializeDict();
 	void insertDictPair(char* theKey,char* theValue);
