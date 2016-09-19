@@ -411,6 +411,7 @@ int Opcode::fnBUILD(ifstream &instream,std::string str1,std::string::iterator &i
 {
 	//cout << "BUILD";
 	//cout << endl;
+	it1++;
 	return 0;
 }
 // push self.find_class(modname, name); 2 string args
