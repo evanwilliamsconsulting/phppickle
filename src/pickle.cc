@@ -779,6 +779,9 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
             }
 	} while (theOpcode != '(');
 
+	/*
+	// What we did here was to pull the top of the stack off,
+	// And assume that it was a Tuple.  It was not a Tuple!
 	tupleItem = &theStack.top();
 
 	tupleItem->initializeTuple();
@@ -788,6 +791,7 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
 	tupleItem->setIndex(0);
 
 	tupleItem->opcode = 't';
+	*/
 
 	// For Now We Note that TUPLE exists!
 	it1++;

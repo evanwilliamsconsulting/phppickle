@@ -28,6 +28,9 @@ class StackItem {
         StackItem()
 	{
 	    theMark = 0;
+	    initializeTuple();
+	    someTuple->moduleName = (char*)emalloc(sizeof(char)*100);
+ 	    someTuple->className = (char*)emalloc(sizeof(char)*100);
 	}
         StackItem(const StackItem &otherItem)
 	{

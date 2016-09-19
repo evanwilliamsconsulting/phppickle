@@ -24,16 +24,6 @@ void StackItem::setAsObject()
 {
 	someTuple->asObject = 1;
 }
-void StackItem::setModuleName(char* theModuleName)
-{
-	someTuple->moduleName = (char*)emalloc(sizeof(char)*100);
-	strcpy(someTuple->moduleName,theModuleName);
-}
-void StackItem::setClassName(char* theClassName)
-{
-	someTuple->className = (char*)emalloc(sizeof(char)*100);
-	strcpy(someTuple->className,theClassName);
-}
 int StackItem::getIndex()
 {
 	return someTuple->index;
@@ -41,6 +31,14 @@ int StackItem::getIndex()
 char* StackItem::getModuleName()
 {
 	return someTuple->moduleName;
+}
+void StackItem::setModuleName(char* theModuleName)
+{
+	strcpy(someTuple->moduleName,theModuleName);
+}
+void StackItem::setClassName(char * theClassName)
+{
+	strcpy(someTuple->className,theClassName);
 }
 char* StackItem::getClassName()
 {
