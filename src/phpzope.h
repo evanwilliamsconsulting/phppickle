@@ -40,7 +40,9 @@ public:
     ~PHPZope();
     int returnValue();
     int readPickle(char *strFile);
+    int setPickle(char *thePickle);
     char* returnPickleFile(stack<StackItem>& theStack,vector<StackItem>& theMemo);
+    char* returnPickleString(stack<StackItem>& theStack,vector<StackItem>& theMemo);
     int retrieve_state(ifstream& infile,string& state2,stack<StackItem>& theStack,int& lastMark,vector<StackItem>& theMemo);
     char* returnModuleName();
     char* returnKlassName();
@@ -50,6 +52,7 @@ public:
     stack<StackItem>& retrieveCurrentStack();
     vector<StackItem>& retrieveCurrentMemo();
     int getMemoSize();
+    std::string theString;
 private:
     char filename[100];
     char buffer[1000];

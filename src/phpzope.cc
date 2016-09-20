@@ -25,6 +25,11 @@ int PHPZope::retrieveStackDepth() {
 	int stackDepth = theStack.size();
 	return stackDepth;
 }
+int PHPZope::setPickle(char *pickle)
+{
+	this->theString.assign(pickle,strlen(pickle));
+	return 0;
+}
 int PHPZope::readPickle(char *src)
 {
 	// http://en.cppreference.com/w/cpp/string/byte/strcpy
@@ -166,26 +171,26 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 		    }
 		    else if (result == 5)
 		    {
-			getline(infile,theString);
-			it = theString.begin();
-			someChar = *it++;
-		    }	
-		    else
-		    {
-		        someChar = *it;
-			continueSHORT_BINSTRING = 0;
-		    }
+				getline(infile,theString);
+				it = theString.begin();
+				someChar = *it++;
+			    }	
+			    else
+			    {
+				someChar = *it;
+				continueSHORT_BINSTRING = 0;
+			    }
 
-		    strcpy(buf,"BEGIN");
-		    // strcpy(buf,ptrStackItem->someString);
-		    ptrStackItem = &theStack.top();
-		    lastMark = ptrStackItem->lastMark;	
-		}
-	    }
-    	} while ( *it != '\000' && it != theString.end() && (result == 0 || result == 2 || result == 3 || result == 4 || result == 5));
+			    strcpy(buf,"BEGIN");
+			    // strcpy(buf,ptrStackItem->someString);
+			    ptrStackItem = &theStack.top();
+			    lastMark = ptrStackItem->lastMark;	
+			}
+		    }
+	} while ( *it != '\000' && it != theString.end() && (result == 0 || result == 2 || result == 3 || result == 4 || result == 5));
 
 	printf("\n");
-    	return 0;
+	return 0;
 } // retrieve_state()
 
 char* PHPZope::returnPickleFile(stack<StackItem>& theStack,vector<StackItem>& theMemo)
@@ -221,6 +226,24 @@ char* PHPZope::returnPickleFile(stack<StackItem>& theStack,vector<StackItem>& th
 	    int i;
         }
 	return this->filename;
+}
+
+char* PHPZope::returnPickleString(stack<StackItem>& theStack,vector<StackItem>& theMemo)
+{
+	memoSize = 15;
+	int j;
+	int boolSTOP;
+	int lastMark = 0;
+	continueSHORT_BINSTRING = 0;
+	ifstream infile;
+	std::string state;
+
+	theMemo.resize(memoSize);
+	std::stringstream parse(this->theString);
+	this->retrieve_state(infile,state,theStack,lastMark,theMemo);
+	memoSize += 1;
+
+	return 0;
 }
 
 void phpzope_free_storage(void *object TSRMLS_DC)
@@ -276,6 +299,30 @@ PHP_METHOD(PHPZope, returnValue)
     phpzope = obj->phpzope;
     if (phpzope != NULL) {
         RETURN_LONG(phpzope->returnValue());
+    }
+    RETURN_NULL();
+}
+PHP_METHOD(PHPZope, setPickle)
+{
+    PHPZope *phpzope;
+    char *ptr,*ptr2;
+    char name[1000];
+    int name_len;
+    phpzope_object *obj = (phpzope_object *)zend_object_store_get_object(
+        getThis() TSRMLS_CC);
+    phpzope = obj->phpzope;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &ptr, &name_len) == FAILURE) {
+        RETURN_NULL();
+    }
+    ptr2 = name;
+    for (int i=0;i<name_len;i++)
+    {
+	*ptr2++ = *ptr++;
+    }
+    *ptr2 = '\0';
+    ptr2 = name;
+    if (phpzope != NULL) {
+        phpzope->setPickle(ptr2);
     }
     RETURN_NULL();
 }
@@ -420,12 +467,107 @@ PHP_METHOD(PHPZope, returnPickleFile)
 	add_assoc_zval(return_value,"theMemo",mysubarray);
     }
 } 
+PHP_METHOD(PHPZope, returnPickleString)
+{
+    char *mystr;
+    zval *mysubarray,*opcodesubarray;
+    StackItem *ptrStackItem;
+
+    array_init(return_value);
+    /*
+    add_index_long(return_value, 42, 123);
+    add_next_index_string(return_value,"I should now be found at index 43", 1);
+    add_next_index_string(return_value,"I'm at 44!", 1);
+    mystr = estrdup("Forty Five");
+    add_next_index_string(return_value,"pi",3.1415926535);
+    */
+    PHPZope *phpzope;
+    phpzope_object *obj = (phpzope_object *)zend_object_store_get_object(
+        getThis() TSRMLS_CC);
+    phpzope = obj->phpzope;
+    int count = 0;
+    if (phpzope != NULL) {
+	//ptrStackItem = (StackItem*)emalloc(sizeof(StackItem));
+	//ptrStackItem->opcode = '!';
+	stack<StackItem> theStack = phpzope->retrieveCurrentStack();
+	vector<StackItem> theMemo = phpzope->retrieveCurrentMemo();
+	phpzope->returnPickleString(theStack,theMemo);
+	char somestring[100];
+	int depth = theStack.size();
+	sprintf(somestring,"stackDepth %i",depth);
+	ALLOC_INIT_ZVAL(mysubarray);
+	array_init(mysubarray);
+	//add_next_index_string(mysubarray,somestring,1);
+	//add_next_index_string(return_value,somestring,1);
+	
+	int stackDepth = depth;
+	Pickle *myPickler = new Pickle();
+	int count = 1;
+	while (stackDepth > 0 )
+	{
+	     int result;
+	     StackItem stackItem = theStack.top();
+	     sprintf(somestring,"%c",stackItem.opcode);
+	     for (int i = 0; i < OPCODE_COUNT; i++)
+	     {
+	    	Opcode *currentOpcode = myPickler->opcodes[i];
+	        if (currentOpcode->opcode == stackItem.opcode)
+                {
+		    //depth = theStack.size();
+		    ALLOC_INIT_ZVAL(opcodesubarray);
+		    array_init(opcodesubarray);
+		    add_assoc_string(opcodesubarray,"opcode",somestring,1);
+		    add_assoc_long(opcodesubarray,"depth",depth);
+	            result = (currentOpcode->opr)(opcodesubarray,&stackItem,depth);
+		    sprintf(somestring,"%i",count++);
+		    //add_assoc_zval(mysubarray,somestring,opcodesubarray); 
+		    add_assoc_zval(return_value,somestring,opcodesubarray); 
+		}
+	    }
+	    stackDepth--;
+	    theStack.pop();
+	    stackItem = theStack.top();
+	} while (stackDepth > 1 );
+	add_assoc_zval(return_value,"result",mysubarray); 
+
+	// Now print the memo
+	ALLOC_INIT_ZVAL(mysubarray);
+	array_init(mysubarray);
+	int memoSize;
+	memoSize = phpzope->getMemoSize();
+	for (int k=0; k<memoSize; k++ )
+	{
+	     int result;
+	     StackItem memoItem = theMemo[k];
+	     for (int i = 0; i < OPCODE_COUNT; i++)
+	     {
+	    	Opcode *currentOpcode = myPickler->opcodes[i];
+	        if (currentOpcode->opcode == memoItem.opcode)
+                {
+		    depth = theMemo.size();
+		    ALLOC_INIT_ZVAL(opcodesubarray);
+		    array_init(opcodesubarray);
+	            result = (currentOpcode->opr)(opcodesubarray,&memoItem,depth);
+		    sprintf(somestring,"%i",k);
+		    add_assoc_zval(mysubarray,somestring,opcodesubarray); 
+		}
+	    }
+	}
+
+	// Now print the memo
+
+
+	add_assoc_zval(return_value,"theMemo",mysubarray);
+    }
+} 
 
 zend_function_entry phpzope_methods[] = {
         PHP_ME(PHPZope,  __construct,     NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
         PHP_ME(PHPZope,  returnValue,           NULL, ZEND_ACC_PUBLIC)
         PHP_ME(PHPZope,  readPickle,           NULL, ZEND_ACC_PUBLIC)
+        PHP_ME(PHPZope,  setPickle,           NULL, ZEND_ACC_PUBLIC)
         PHP_ME(PHPZope,  returnPickleFile,           NULL, ZEND_ACC_PUBLIC)
+        PHP_ME(PHPZope,  returnPickleString,           NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
