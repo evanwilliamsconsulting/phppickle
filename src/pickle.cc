@@ -731,7 +731,7 @@ int Opcode::fnBINPUT(ifstream &instream,std::string str1,std::string::iterator &
 	char theInt[10];
 	int countNewline = 0;
 	int item;
-	it1++;
+	//it1++;
 	theItem = &theStack.top();
 	getValue = *it1;
 	theItem->someInt = getValue;
@@ -1115,6 +1115,14 @@ int Opcode::oprTUPLE(zval* subarray,StackItem* stackitem, int depth) {
 	if (moduleName == NULL || className == NULL)
 	{
 		sprintf(somestring,"index: , module: , class: ");
+	}
+	else if (moduleName == NULL)
+	{
+		sprintf(somestring,"index: %i, class: %s",stackitem->getIndex(),stackitem->getClassName());
+	}
+	else if (className == NULL)
+	{
+		sprintf(somestring,"index: %i, module: %s",stackitem->getIndex(),stackitem->getModuleName());
 	}
 	else
 	{
