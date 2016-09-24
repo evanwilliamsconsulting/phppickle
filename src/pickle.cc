@@ -1,5 +1,7 @@
 #include "pickle.h"
 
+#define USE_OLD_MALLOC 1
+
 
 Opcode::Opcode(char opcodeChar,const char *desc,fn funct,op_print opr)
 {
@@ -95,7 +97,11 @@ int Opcode::fnGLOBAL1(ifstream &instream,std::string str1,std::string::iterator 
 	int isNewObj = 0;
 	int lastMark;
 	int j = 0;
+#ifdef USE_OLD_MALLOC
+	buf = (char*)malloc(sizeof(char)*200);
+#else
 	buf = (char*)emalloc(sizeof(char)*200);
+#endif
 	ptr = buf;
 	len = 0;
 	while (it1 != str1.end() && *it1 != '\000')
@@ -104,11 +110,20 @@ int Opcode::fnGLOBAL1(ifstream &instream,std::string str1,std::string::iterator 
 	    it1++;
 	    len++;
 	}
+#ifdef USE_OLD_MALLOC
+	currentItem->someString=(char*)malloc(sizeof(char)*(len+1));
+#else
 	currentItem->someString=(char*)emalloc(sizeof(char)*(len+1));
+#endif
 	strcpy(currentItem->someString,buf);
 	currentItem->lastMark = lastMark;
 	currentItem->opcode = '~';
+	currentItem->hasString = 0;
+#ifdef USE_OLD_MALLOC
+	free(buf);
+#else
 	efree(buf);
+#endif
 
 	return 1;	
 }
@@ -122,19 +137,19 @@ int Opcode::fnGLOBAL3(ifstream &instream,std::string str1,std::string::iterator 
 // push special markobject on stack
 int Opcode::fnMARK(ifstream &instream,std::string str1,std::string::iterator &it1,StackItem &theStackItem,stack<StackItem>& theStack,vector<StackItem>& theMemo)
 {
-	int forward;
-	forward = 0;
+/*
 	it1++;
+	// 2do: modify to not pop if nothing on stack
 	std::string strMARK;
-	// Find current Stack Depth
 	int stackDepth = theStack.size();
 	StackItem *theItem;
 	theItem = &theStack.top();
 	theItem->theMark = stackDepth;
 	theItem->lastMark = stackDepth;
 	theItem->opcode = '(';
-	
-	return 1;
+*/
+        it1++;	
+	return 0;
 }
 // every pickle ends with STOP
 int Opcode::fnSTOP(ifstream &instream,std::string str1,std::string::iterator &it1,StackItem &theStackItem,stack<StackItem>& theStack,vector<StackItem>& theMemo)
@@ -307,11 +322,15 @@ int Opcode::fnSTRING(ifstream &instream,std::string str1,std::string::iterator &
 	char *ptr;
 	char *buf;
 	int len;
+#ifdef USE_OLD_MALLOC
+	buf = (char*)malloc(sizeof(char)*200);
+#else
 	buf = (char*)emalloc(sizeof(char)*200);
+#endif
 	ptr = buf;
 	len = 0;
 	it1++;
-	while (it1 != str1.end() && *it1 != '\177')
+	while (it1 != str1.end() && *it1 != '\177' && *it1 != '\000')
         {
 	     *ptr++ = *it1;
 	     len++;
@@ -319,9 +338,18 @@ int Opcode::fnSTRING(ifstream &instream,std::string str1,std::string::iterator &
 	     forward++;
 	}
 	it1++;
+#ifdef USE_OLD_MALLOC
+	theItem->someString=(char*)malloc(sizeof(char)*(len+1));
+#else
 	theItem->someString=(char*)emalloc(sizeof(char)*(len+1));
+#endif
+	theItem->hasString = 0;
 	strcpy(theItem->someString,buf);
+#ifdef USE_OLD_MALLOC
+	free(buf);
+#else
 	efree(buf);
+#endif
 	return 1;
 }
 // push string; counted binary string argument
@@ -357,8 +385,13 @@ int Opcode::fnSHORT_BINSTRING(ifstream &instream,std::string str1,std::string::i
 	    it1++;
 	    intCountDown--;
 	}
+#ifdef USE_OLD_MALLOC
+	theItem->someString=(char*)malloc(sizeof(char)*(intBinstring+1));
+#else
 	theItem->someString=(char*)emalloc(sizeof(char)*(intBinstring+1));
+#endif
 	strcpy(theItem->someString,shortBinstring.c_str());
+	theItem->hasString = 0;
 	return 0;
 }
 // fnSHORT_BINSTRING1 for when it is continued onto the next line
@@ -380,7 +413,12 @@ int Opcode::fnSHORT_BINSTRING1(ifstream &instream,std::string str1,std::string::
 	    it1++;
 	    intCountDown--;
 	}
+#ifdef USE_OLD_MALLOC
+	theItem->someString=(char*)malloc(sizeof(char)*(intBinstring+1));
+#else
 	theItem->someString=(char*)emalloc(sizeof(char)*(intBinstring+1));
+#endif
+	theItem->hasString = 0;
 	strcpy(theItem->someString,shortBinstring.c_str());
 	return 0;
 }
@@ -432,15 +470,22 @@ int Opcode::fnGLOBAL(ifstream &instream,std::string str1,std::string::iterator &
 	int countNewline = 0;
 	int forward = 1;
 	//it1++;
+#ifdef USE_OLD_MALLOC
+	moduleItem = (StackItem*)malloc(sizeof(StackItem));
+#else
 	moduleItem = (StackItem*)emalloc(sizeof(StackItem));
+#endif
 	char *ptr;
 	char *buf;
+#ifdef USE_OLD_MALLOC
+	buf = (char*)malloc(sizeof(char)*200);
+#else
 	buf = (char*)emalloc(sizeof(char)*200);
+#endif
 	ptr = buf;
 	int len;
 	len = 0;
-	while (it1 < str1.end() && *it1 != '\177')
-	//while (it1 < str1.end())
+	while (it1 < str1.end() && *it1 != '\177' && *it1 != '\000')
         {
 	     *ptr++ = *it1;
 	     len++;
@@ -448,7 +493,13 @@ int Opcode::fnGLOBAL(ifstream &instream,std::string str1,std::string::iterator &
 	     forward++;
 	}
 	// Push new Class onto the Stack
+#ifdef USE_OLD_MALLOC
+	char* stringPtr=(char*)malloc(sizeof(char)*(len+1));
+	moduleItem->someString = stringPtr;
+#else
 	moduleItem->someString=(char*)emalloc(sizeof(char)*(len+1));
+#endif
+	moduleItem->hasString = 0;
 	moduleItem->lastMark = lastMark;
 	strcpy(moduleItem->someString,buf);
 	int retval;
@@ -463,7 +514,11 @@ int Opcode::fnGLOBAL(ifstream &instream,std::string str1,std::string::iterator &
         {
 	    moduleItem->opcode = '!';
 	}
+#ifdef USE_OLD_MALLOC
+	free(buf);
+#else
 	efree(buf);
+#endif
 	theStack.push(*moduleItem);
 	return retval;
 }
@@ -632,7 +687,7 @@ int Opcode::fnPUT(ifstream &instream,std::string str1,std::string::iterator &it1
 	std::string strPut;
 	char theInt[10];
 	int countNewline = 0;
-	while (it1 < str1.end())
+	while (it1 < str1.end() && *it1 != '\000')
         {
 	     int item;
 	     item = *it1;
@@ -653,7 +708,11 @@ int Opcode::fnPUT(ifstream &instream,std::string str1,std::string::iterator &it1
 	prevItem = &theStack.top();
         theMemo.push_back(*prevItem);
 
+#ifdef USE_OLD_MALLOC
+	newItem = (StackItem*)malloc(sizeof(StackItem));
+#else
 	newItem = (StackItem*)emalloc(sizeof(StackItem));
+#endif
 	newItem->opcode = 'p';
 	newItem->someInt = atoi(theInt);
 
@@ -693,13 +752,15 @@ int Opcode::fnSETITEM(ifstream &instream,std::string str1,std::string::iterator 
 	char *ptrKey;
 	char *bufKey;
 	int lenKey;
+#ifdef USE_OLD_MALLOC
+	bufKey = (char*)malloc(sizeof(char)*200);
+#else
 	bufKey = (char*)emalloc(sizeof(char)*200);
+#endif
 	ptrKey = bufKey;
+	char bufValue[201];
 	char *ptrValue;
-	char *bufValue;
 	int lenValue;
-	bufValue = (char*)emalloc(sizeof(char)*200);
-	ptrValue = bufValue;
 
 	StackItem *theItem,*valueItem,*keyItem,*someItem,*newItem;
 	int forward;
@@ -713,7 +774,8 @@ int Opcode::fnSETITEM(ifstream &instream,std::string str1,std::string::iterator 
 	theItem = &theStack.top();
 	int lastMark = theItem->lastMark;
 	valueItem = &theStack.top();
-	strcpy(ptrValue,valueItem->someString);
+	ptrValue=bufValue;
+	//strcpy(ptrValue,valueItem->someString);
 	theStack.pop();
 	keyItem = &theStack.top();
 	if (keyItem->someString == 0)
@@ -737,17 +799,29 @@ int Opcode::fnSETITEM(ifstream &instream,std::string str1,std::string::iterator 
 	theStack.pop();
 	theStack.pop();
 	theStack.pop();
+#ifdef USE_OLD_MALLOC
+	newItem = (StackItem*)malloc(sizeof(StackItem));
+#else
 	newItem = (StackItem*)emalloc(sizeof(StackItem));
+#endif
 	newItem->opcode = 'd';
 	newItem->initializeDict();	
 	int len = 50;
+#ifdef USE_OLD_MALLOC
+	newItem->someString=(char*)malloc(sizeof(char)*(len+1));
+#else
 	newItem->someString=(char*)emalloc(sizeof(char)*(len+1));
+#endif
+	newItem->hasString = 0;
 	strcpy(newItem->someString,"NEWDICT");
 	newItem->lastMark = lastMark;
 	newItem->insertDictPair(ptrKey,ptrValue);
 	theStack.push(*newItem);
+#ifdef USE_OLD_MALLOC
+	free(bufKey);
+#else
 	efree(bufKey);
-	efree(bufValue);
+#endif
 
         return 0;
 }
@@ -759,8 +833,8 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
 	StackItem *theItem,*tupleItem;
 	int len;
 	int index;
-	char moduleName[100];
-	char className[100];
+	char *moduleName;
+	char *className;
 	char theOpcode;
 	
 	do
@@ -771,16 +845,16 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
 	    // harvest module name
 	    if (theOpcode == '!')
             {
-		strcpy(moduleName,theItem->someString);
+		moduleName=theItem->someString;
 	    }
 	    // harvest class name
             if (theOpcode == '~')
             {
-		strcpy(className,theItem->someString);
+		className=theItem->someString;
             }
 	} while (theOpcode != '(');
 
-	/*
+
 	// What we did here was to pull the top of the stack off,
 	// And assume that it was a Tuple.  It was not a Tuple!
 	tupleItem = &theStack.top();
@@ -792,7 +866,6 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
 	tupleItem->setIndex(0);
 
 	tupleItem->opcode = 't';
-	*/
 
 	// For Now We Note that TUPLE exists!
 	it1++;
@@ -994,7 +1067,8 @@ int Opcode::oprDICT(zval* subarray,StackItem* stackitem, int depth) {
 }
 int Opcode::oprEMPTY_DICT(zval* subarray,StackItem* stackitem, int depth) {
 	char somestring[100];
-	sprintf(somestring,"dict: %s",stackitem->getDict());
+	// sprintf(somestring,"dict: %s",stackitem->getDict());
+	sprintf(somestring,"dict: BLANK");
 	add_next_index_string(subarray,somestring,1);
 }
 int Opcode::oprAPPENDS(zval* subarray,StackItem* stackitem, int depth) {
@@ -1027,9 +1101,25 @@ int Opcode::oprSETITEM(zval* subarray,StackItem* stackitem, int depth) {
 }
 int Opcode::oprTUPLE(zval* subarray,StackItem* stackitem, int depth) {   
 	char somestring[100];
-	
-	sprintf(somestring,"index: %i, module: %s, class: %s",stackitem->getIndex(),stackitem->getModuleName(),stackitem->getClassName());
-	//sprintf(somestring,"index: , module: , class: ");
+        char *moduleName,*className;
+
+	moduleName = stackitem->getModuleName();
+	className = stackitem->getClassName();
+
+	char moduleString[1000];
+	char classString[1000];
+
+	//strcpy(moduleString,moduleName);
+	//strcpy(classString,className);
+
+	if (moduleName == NULL || className == NULL)
+	{
+		sprintf(somestring,"index: , module: , class: ");
+	}
+	else
+	{
+		sprintf(somestring,"index: %i, module: %s, class: %s",stackitem->getIndex(),stackitem->getModuleName(),stackitem->getClassName());
+	}
 	add_next_index_string(subarray,somestring,1);
 }
 int Opcode::oprEMPTY_TUPLE(zval* subarray,StackItem* stackitem, int depth) {

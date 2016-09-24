@@ -2,7 +2,7 @@
 
 void StackItem::initializeTuple()
 {
-	someTuple = (Tuple*)emalloc(sizeof(Tuple));
+	someTuple = (Tuple*)malloc(sizeof(Tuple));
 }
 void StackItem::getString(char* theCharString)
 {
@@ -32,13 +32,13 @@ char* StackItem::getModuleName()
 {
 	return someTuple->moduleName;
 }
-void StackItem::setModuleName(char* theModuleName)
+void StackItem::setModuleName(char *theModuleName)
 {
-	strcpy(someTuple->moduleName,theModuleName);
+	moduleName=theModuleName;
 }
-void StackItem::setClassName(char * theClassName)
+void StackItem::setClassName(char *theClassName)
 {
-	strcpy(someTuple->className,theClassName);
+	className=theClassName;
 }
 char* StackItem::getClassName()
 {

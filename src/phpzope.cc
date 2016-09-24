@@ -52,6 +52,8 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 	char opcode;
 	char *ptr;
 	char *buf;
+	char buffer[1000];
+	int saveString = -1;
 
 	/* fetch the data : retrieve all the rows in the result set */
 
@@ -66,7 +68,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 	theString = parse.str();
 	it = theString.begin();
 	Opcode *nextOpcode;
-	buf = (char*)emalloc(sizeof(char)*200);
+	buf = (char*)malloc(sizeof(char)*200);
 	strcpy(buf,"BEGIN");
 	do
 	{
@@ -84,7 +86,8 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 					break;
 				}
 			}
-	            ptrStackItem = (StackItem*)emalloc(sizeof(StackItem));
+	            ptrStackItem = (StackItem*)malloc(sizeof(StackItem));
+		    ptrStackItem->initialize();
 		    ptrStackItem->opcode = someChar;
 		    ptrStackItem->theMark = 0;
 		    ptrStackItem->lastMark = lastMark;
@@ -95,11 +98,12 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 		else if (result == 3)
 		{
 			someChar = '~';
-	                ptrStackItem = (StackItem*)emalloc(sizeof(StackItem));
+	                ptrStackItem = (StackItem*)malloc(sizeof(StackItem));
+		    	ptrStackItem->initialize();
 		        ptrStackItem->opcode = someChar;
 		        ptrStackItem->theMark = 0;
 		        ptrStackItem->lastMark = lastMark;
-		        ptrStackItem->someString=(char*)emalloc(sizeof(char)*100);
+		        ptrStackItem->someString=(char*)malloc(sizeof(char)*100);
 			strcpy(ptrStackItem->someString,buf);
 	    	        theStack.push(*ptrStackItem);
 	            	result = (Opcode::fnGLOBAL1)(infile,theString,it,*ptrStackItem,theStack,theMemo);
@@ -112,7 +116,8 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 		else if (result == 4)
 		{
 			someChar = 'U';
-	                ptrStackItem = (StackItem*)emalloc(sizeof(StackItem));
+	                ptrStackItem = (StackItem*)malloc(sizeof(StackItem));
+		    	ptrStackItem->initialize();
 		        ptrStackItem->opcode = someChar;
 		        ptrStackItem->theMark = 0;
 		        ptrStackItem->lastMark = lastMark;
@@ -127,19 +132,28 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 	        else if (currentOpcode->opcode == someChar)
                 {
 		    char *someString;
-	            ptrStackItem = (StackItem*)emalloc(1+sizeof(StackItem));
+	            ptrStackItem = (StackItem*)malloc(1+sizeof(StackItem));
+		    ptrStackItem->initialize();
 		    ptrStackItem->opcode = someChar;
 		    ptrStackItem->theMark = 0;
 		    ptrStackItem->lastMark = lastMark;
+		    
+		    if (saveString==0)
+		    {
+			ptrStackItem->someString=(char*)malloc(sizeof(char)*1000);
+			strcpy(ptrStackItem->someString,buf);
+			ptrStackItem->hasString = 0;
+			free(buf);
+		    }
 	    	    theStack.push(*ptrStackItem);
-		    //printf("push\n");
 	            result = (currentOpcode->opfunc)(infile,theString,it,*ptrStackItem,theStack,theMemo);
 
-		    //int someLength = 0;
-		    //someLength=(ptrStackItem->someString).length();
-	            //someLength++;
-		    //ptrStackItem->someString=(char*)emalloc(sizeof(char)*someLength);
-		    //strcpy(ptrStackItem->someString,buf);
+		    if (ptrStackItem->hasString == 0)
+		    {
+			buf=(char*)malloc(sizeof(char)*strlen(ptrStackItem->someString));
+			strcpy(buf,ptrStackItem->someString);
+			saveString = 0;
+		    }
 
 		    if (result == 2)
 		    {
@@ -254,7 +268,7 @@ void phpzope_free_storage(void *object TSRMLS_DC)
     zend_hash_destroy(obj->std.properties);
     FREE_HASHTABLE(obj->std.properties);
 
-    efree(obj);
+    free(obj);
 }
 
 zend_object_value phpzope_create_handler(zend_class_entry *type TSRMLS_DC)
@@ -262,7 +276,7 @@ zend_object_value phpzope_create_handler(zend_class_entry *type TSRMLS_DC)
     zval *tmp;
     zend_object_value retval;
 
-    phpzope_object *obj = (phpzope_object *)emalloc(sizeof(phpzope_object));
+    phpzope_object *obj = (phpzope_object *)malloc(sizeof(phpzope_object));
     memset(obj, 0, sizeof(phpzope_object));
     obj->std.ce = type;
 
@@ -394,7 +408,7 @@ PHP_METHOD(PHPZope, returnPickleFile)
     phpzope = obj->phpzope;
     int count = 0;
     if (phpzope != NULL) {
-	//ptrStackItem = (StackItem*)emalloc(sizeof(StackItem));
+	//ptrStackItem = (StackItem*)malloc(sizeof(StackItem));
 	//ptrStackItem->opcode = '!';
 	stack<StackItem> theStack = phpzope->retrieveCurrentStack();
 	vector<StackItem> theMemo = phpzope->retrieveCurrentMemo();
@@ -433,7 +447,6 @@ PHP_METHOD(PHPZope, returnPickleFile)
 	    }
 	    stackDepth--;
 	    theStack.pop();
-	    stackItem = theStack.top();
 	} while (stackDepth > 1 );
 	add_assoc_zval(return_value,"result",mysubarray); 
 
@@ -487,7 +500,7 @@ PHP_METHOD(PHPZope, returnPickleString)
     phpzope = obj->phpzope;
     int count = 0;
     if (phpzope != NULL) {
-	//ptrStackItem = (StackItem*)emalloc(sizeof(StackItem));
+	//ptrStackItem = (StackItem*)malloc(sizeof(StackItem));
 	//ptrStackItem->opcode = '!';
 	stack<StackItem> theStack = phpzope->retrieveCurrentStack();
 	vector<StackItem> theMemo = phpzope->retrieveCurrentMemo();

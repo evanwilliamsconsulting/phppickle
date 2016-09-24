@@ -21,19 +21,40 @@ class StackItem {
         char opcode;
         int someInt;
 	char* someString;
+	int hasString;
 	Tuple* someTuple;
 	Dict* someDict;
+	char* moduleName;
+	char* className;
 	int theMark;
 	int lastMark;
         StackItem()
 	{
+	    hasString = -1;
 	    theMark = 0;
 	    initializeTuple();
-	    someTuple->moduleName = (char*)emalloc(sizeof(char)*100);
- 	    someTuple->className = (char*)emalloc(sizeof(char)*100);
+/*
+	    someTuple->moduleName = (char*)malloc(sizeof(char)*100);
+ 	    someTuple->className = (char*)malloc(sizeof(char)*100);
+	    moduleName = (char*)malloc(sizeof(char)*100);
+ 	    className = (char*)malloc(sizeof(char)*100);
+*/
+	}
+	void initialize()
+	{
+	    hasString = -1;
+	    theMark = 0;
+	    initializeTuple();
+/*
+	    someTuple->moduleName = (char*)malloc(sizeof(char)*100);
+ 	    someTuple->className = (char*)malloc(sizeof(char)*100);
+	    moduleName = (char*)malloc(sizeof(char)*100);
+ 	    className = (char*)malloc(sizeof(char)*100);
+*/
 	}
         StackItem(const StackItem &otherItem)
 	{
+	    hasString = otherItem.hasString;
 	    opcode = otherItem.opcode;
 	    someInt = otherItem.someInt;
 	    someString = otherItem.someString;
@@ -44,6 +65,7 @@ class StackItem {
 	}
 	StackItem& operator= (const StackItem &otherItem)
 	{
+	    hasString = otherItem.hasString;
 	    opcode = otherItem.opcode;
 	    someInt = otherItem.someInt;
 	    someString = otherItem.someString;
