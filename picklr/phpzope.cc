@@ -69,8 +69,8 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 	Opcode *nextOpcode;
 	buf = (char*)malloc(sizeof(char)*200);
 	strcpy(buf,"BEGIN");
-	//do
-	//{
+	do
+	{
 	    for (int i = 0; i < OPCODE_COUNT; i++)
 	    {
 	    	Opcode *currentOpcode = myPickler->opcodes[i];
@@ -109,7 +109,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 	            	//result = (currentOpcode->opfunc)(infile,theString,it,*ptrStackItem,theStack,theMemo);
 			getline(infile,theString);
 			it = theString.begin();
-			someChar = *it++;
+			someChar = *it;
 			result = 1;
 		}
 		else if (result == 4)
@@ -121,6 +121,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 		        ptrStackItem->theMark = 0;
 		        ptrStackItem->lastMark = lastMark;
 	    	        theStack.push(*ptrStackItem);
+			Utils::dprintf("fnSHORT_BINSTRING: result == 4, calling fnSHORT_BINSTRING1\n");
 	            	result = (Opcode::fnSHORT_BINSTRING1)(infile,theString,it,*ptrStackItem,theStack,theMemo);
 			result = 1;
 		}	
@@ -140,10 +141,12 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 		    if (saveString==0)
 		    {
 			ptrStackItem->someString=(char*)malloc(sizeof(char)*1000);
+			Utils::dprintf("saveString: %s\n",ptrStackItem->someString);
 			strcpy(ptrStackItem->someString,buf);
 			ptrStackItem->hasString = 0;
 			free(buf);
 		    }
+		    Utils::dprintf("\nopcode: %c\n",someChar);
 	    	    theStack.push(*ptrStackItem);
 	            result = (currentOpcode->opfunc)(infile,theString,it,*ptrStackItem,theStack,theMemo);
 
@@ -178,6 +181,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 		    }
 		    else if (result == 4)
 		    {
+			Utils::dprintf("fnSHORT_BINSTRING: result == 4, after capture, prepare\n");
 		        getline(infile,theString);
 			someChar = 'U';
 			it = theString.begin();
@@ -200,7 +204,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 			    lastMark = ptrStackItem->lastMark;	
 			}
 		    }
-	//} while ( *it != '\000' && it != theString.end() && (result == 0 || result == 2 || result == 3 || result == 4 || result == 5));
+	} while ( *it != '\000' && it != theString.end() && (result == 0 || result == 2 || result == 3 || result == 4 || result == 5));
 
 	printf("\n");
 	return 0;

@@ -73,7 +73,6 @@ using namespace std;
 		    std::string module;
 		    std::string name;
 		    std::string pid;
-		    Utils *utility;
 		public:
 		    char opcode;
 		    char desc[25];

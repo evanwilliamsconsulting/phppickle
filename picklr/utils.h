@@ -5,9 +5,8 @@
 using namespace std;
 
 class Utils {
-	protected:
-		int debugLevel;
 	public:
-		Utils(int debugLevel=0);
-		dprintf(char *format, ...);
+		static int debugLevel;
+		Utils(int debugLevel);
+		static void dprintf(const char *format, ...);
 };

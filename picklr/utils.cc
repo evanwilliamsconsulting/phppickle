@@ -1,12 +1,20 @@
+#include <stdio.h>
+#include <stdarg.h>
 #include "utils.h"
 
-void utils::dprintf(char *format, ...)
+int Utils::debugLevel = 1;
+
+Utils::Utils(int debugLvl)
 {
-	debugLevel = this->debugLevel;
+	Utils::debugLevel=debugLvl;
+}
+void Utils::dprintf(const char *format, ...)
+{
+	int debugLvl = Utils::debugLevel;
         va_list args;
         va_start(args, format);
-        if(debugLevel == 1) {
-                printf(format, args);
+        if(debugLvl == 1) {
+                vprintf(format, args);
         }
         va_end(args);
 }
