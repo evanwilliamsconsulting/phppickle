@@ -6,30 +6,16 @@ using namespace std;
 
 class Dict {
     public:
-	char output[200];
-	char *keys[50];
+	char *output;
+	char **keys;
 	char *values[50];
-	int keyIndex = 0;
+	int keyIndex;
 	int count = 0;
 	void insertPair(char* theKey,char* theValue);
-	int getIndex()
-	{
-	    return keyIndex;
-	}
-	void incrementIndex()
-	{
-	    keyIndex++;
-	}
+	int getIndex();
+	void incrementIndex();
 	char* printDict();
-        Dict()
-	{
-	    count = 0;
-	    keyIndex = 0;
-	}
-        Dict(const Dict &otherItem)
-	{
-	    count = otherItem.count;
-	    keyIndex = otherItem.keyIndex;
-	}
-	Dict& operator= (const Dict& otherItem);
+        Dict();
+        Dict(const Dict& otherItem);
+	Dict operator= (const Dict& otherItem);
 };

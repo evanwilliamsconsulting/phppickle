@@ -47,7 +47,9 @@ public:
     char* returnModuleName();
     char* returnKlassName();
     stack<StackItem> currentStack;
+    StackItem *newStackItem;
     vector<StackItem> theMemo;
+    StackItem *newMemoItem;
     int retrieveStackDepth();
     stack<StackItem>& retrieveCurrentStack();
     vector<StackItem>& retrieveCurrentMemo();

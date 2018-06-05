@@ -110,11 +110,7 @@ int Opcode::fnGLOBAL1(ifstream &instream,std::string str1,std::string::iterator 
 	    it1++;
 	    len++;
 	}
-#ifdef USE_OLD_MALLOC
-	currentItem->someString=(char*)malloc(sizeof(char)*(len+1));
-#else
-	currentItem->someString=(char*)emalloc(sizeof(char)*(len+1));
-#endif
+	currentItem->someString=(char*)malloc(sizeof(char)*100);
 	strcpy(currentItem->someString,buf);
 	currentItem->lastMark = lastMark;
 	currentItem->opcode = '~';
@@ -341,7 +337,7 @@ int Opcode::fnSTRING(ifstream &instream,std::string str1,std::string::iterator &
 #ifdef USE_OLD_MALLOC
 	theItem->someString=(char*)malloc(sizeof(char)*(len+1));
 #else
-	theItem->someString=(char*)emalloc(sizeof(char)*(len+1));
+	//theItem->someString=(char*)emalloc(sizeof(char)*(len+1));
 #endif
 	theItem->hasString = 0;
 	strcpy(theItem->someString,buf);
@@ -350,7 +346,7 @@ int Opcode::fnSTRING(ifstream &instream,std::string str1,std::string::iterator &
 #else
 	efree(buf);
 #endif
-	return 1;
+	return 0;
 }
 // push string; counted binary string argument
 int Opcode::fnBINSTRING(ifstream &instream,std::string str1,std::string::iterator &it1,StackItem &theStackItem,stack<StackItem>& theStack,vector<StackItem>& theMemo)
@@ -385,11 +381,6 @@ int Opcode::fnSHORT_BINSTRING(ifstream &instream,std::string str1,std::string::i
 	    it1++;
 	    intCountDown--;
 	}
-#ifdef USE_OLD_MALLOC
-	theItem->someString=(char*)malloc(sizeof(char)*(intBinstring+1));
-#else
-	theItem->someString=(char*)emalloc(sizeof(char)*(intBinstring+1));
-#endif
 	strcpy(theItem->someString,shortBinstring.c_str());
 	theItem->hasString = 0;
 	return 0;
@@ -413,11 +404,6 @@ int Opcode::fnSHORT_BINSTRING1(ifstream &instream,std::string str1,std::string::
 	    it1++;
 	    intCountDown--;
 	}
-#ifdef USE_OLD_MALLOC
-	theItem->someString=(char*)malloc(sizeof(char)*(intBinstring+1));
-#else
-	theItem->someString=(char*)emalloc(sizeof(char)*(intBinstring+1));
-#endif
 	theItem->hasString = 0;
 	strcpy(theItem->someString,shortBinstring.c_str());
 	return 0;
@@ -470,18 +456,10 @@ int Opcode::fnGLOBAL(ifstream &instream,std::string str1,std::string::iterator &
 	int countNewline = 0;
 	int forward = 1;
 	//it1++;
-#ifdef USE_OLD_MALLOC
 	moduleItem = (StackItem*)malloc(sizeof(StackItem));
-#else
-	moduleItem = (StackItem*)emalloc(sizeof(StackItem));
-#endif
 	char *ptr;
 	char *buf;
-#ifdef USE_OLD_MALLOC
 	buf = (char*)malloc(sizeof(char)*200);
-#else
-	buf = (char*)emalloc(sizeof(char)*200);
-#endif
 	ptr = buf;
 	int len;
 	len = 0;
@@ -493,14 +471,9 @@ int Opcode::fnGLOBAL(ifstream &instream,std::string str1,std::string::iterator &
 	     forward++;
 	}
 	// Push new Class onto the Stack
-#ifdef USE_OLD_MALLOC
-	char* stringPtr=(char*)malloc(sizeof(char)*(len+1));
-	moduleItem->someString = stringPtr;
-#else
-	moduleItem->someString=(char*)emalloc(sizeof(char)*(len+1));
-#endif
 	moduleItem->hasString = 0;
 	moduleItem->lastMark = lastMark;
+	moduleItem->someString=(char*)malloc(sizeof(char)*200);
 	strcpy(moduleItem->someString,buf);
 	int retval;
 	retval = 3;
@@ -698,15 +671,14 @@ int Opcode::fnPUT(ifstream &instream,std::string str1,std::string::iterator &it1
 	// Push new Class onto the Stack
 	StackItem *putItem,*prevItem;
 	putItem= &theStack.top();
-	putItem->someInt = atoi(theInt);
+	//putItem->someInt = atoi(theInt);
 	// Find current Stack Depth
 	
 	// POP THE STACK, because PUT goes into the Memo
 	// Memo is the static stack in the stackitem structure
 	// What opcode also uses Memo? setitem
 	theStack.pop();
-	prevItem = &theStack.top();
-        theMemo.push_back(*prevItem);
+        //theMemo.push_back(theStack.top());
 
 #ifdef USE_OLD_MALLOC
 	newItem = (StackItem*)malloc(sizeof(StackItem));
@@ -716,7 +688,7 @@ int Opcode::fnPUT(ifstream &instream,std::string str1,std::string::iterator &it1
 	newItem->opcode = 'p';
 	newItem->someInt = atoi(theInt);
 
-	//theStack.push(*newItem);
+	theStack.push(*newItem);
 	
 	return 1;
 }
@@ -777,6 +749,7 @@ int Opcode::fnSETITEM(ifstream &instream,std::string str1,std::string::iterator 
 	ptrValue=bufValue;
 	//strcpy(ptrValue,valueItem->someString);
 	theStack.pop();
+	
 	keyItem = &theStack.top();
 	if (keyItem->someString == 0)
 	{
@@ -807,14 +780,10 @@ int Opcode::fnSETITEM(ifstream &instream,std::string str1,std::string::iterator 
 	newItem->opcode = 'd';
 	newItem->initializeDict();	
 	int len = 50;
-#ifdef USE_OLD_MALLOC
-	newItem->someString=(char*)malloc(sizeof(char)*(len+1));
-#else
-	newItem->someString=(char*)emalloc(sizeof(char)*(len+1));
-#endif
 	newItem->hasString = 0;
+	newItem->someString=(char*)malloc(sizeof(char)*200);
 	strcpy(newItem->someString,"NEWDICT");
-	newItem->lastMark = lastMark;
+	//newItem->lastMark = lastMark;
 	newItem->insertDictPair(ptrKey,ptrValue);
 	theStack.push(*newItem);
 #ifdef USE_OLD_MALLOC
@@ -837,9 +806,9 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
 	char *className;
 	char theOpcode;
 	
-	do
+	theStack.pop();
+	while(!theStack.empty())	
 	{
-	    theStack.pop();
 	    theItem=&theStack.top();
 	    theOpcode = theItem->opcode;
 	    // harvest module name
@@ -852,22 +821,18 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
             {
 		className=theItem->someString;
             }
-	} while (theOpcode != '(');
+	    theStack.pop();
+	}
 
-
+	//__asm__("int3");
 	// What we did here was to pull the top of the stack off,
 	// And assume that it was a Tuple.  It was not a Tuple!
-	tupleItem = &theStack.top();
-
+	// For Now We Note that TUPLE exists!
+	tupleItem = new StackItem();
 	tupleItem->initializeTuple();
-
 	tupleItem->setModuleName(moduleName);
 	tupleItem->setClassName(className);
 	tupleItem->setIndex(0);
-
-	tupleItem->opcode = 't';
-
-	// For Now We Note that TUPLE exists!
 	it1++;
 	return 0;
 }
@@ -989,19 +954,19 @@ int Opcode::oprGLOBAL1(zval* subarray,StackItem* stackitem, int depth) {
 	char somestring[100];
 	sprintf(somestring,"name: %s",stackitem->someString);
 	add_assoc_string(subarray,"name",stackitem->someString,1);
-	//add_next_index_string(subarray,somestring,1);
+	add_next_index_string(subarray,somestring,1);
 }
 int Opcode::oprGLOBAL2(zval* subarray,StackItem* stackitem, int depth) {
 	char somestring[100];
 	sprintf(somestring,"module: %s",stackitem->someString);
 	add_assoc_string(subarray,"module",stackitem->someString,1);
-	//add_next_index_string(subarray,somestring,1);
+	add_next_index_string(subarray,somestring,1);
 }
 int Opcode::oprGLOBAL3(zval* subarray,StackItem* stackitem, int depth) {
 	char somestring[100];
 	sprintf(somestring,"newobj");
 	add_assoc_string(subarray,"module",somestring,1);
-	//add_next_index_string(subarray,somestring,1);
+	add_next_index_string(subarray,somestring,1);
 }
 int Opcode::oprSTOP(zval* subarray,StackItem* stackitem, int depth) {
 }
@@ -1067,7 +1032,7 @@ int Opcode::oprDICT(zval* subarray,StackItem* stackitem, int depth) {
 }
 int Opcode::oprEMPTY_DICT(zval* subarray,StackItem* stackitem, int depth) {
 	char somestring[100];
-	// sprintf(somestring,"dict: %s",stackitem->getDict());
+	sprintf(somestring,"dict: %s",stackitem->getDict());
 	sprintf(somestring,"dict: BLANK");
 	add_next_index_string(subarray,somestring,1);
 }
@@ -1109,8 +1074,8 @@ int Opcode::oprTUPLE(zval* subarray,StackItem* stackitem, int depth) {
 	char moduleString[1000];
 	char classString[1000];
 
-	//strcpy(moduleString,moduleName);
-	//strcpy(classString,className);
+	strcpy(moduleString,moduleName);
+	strcpy(classString,className);
 
 	if (moduleName == NULL || className == NULL)
 	{

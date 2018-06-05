@@ -1,36 +1,52 @@
 #include "dict.h"
 
-Dict& Dict::operator=(const Dict& otherItem)
+
+Dict Dict::operator=(const Dict& otherItem)
 {
 	count = otherItem.count;
 	keyIndex = otherItem.keyIndex;
 	return *this;
 }
+Dict::Dict()
+{
+	count = 0;
+	keyIndex = 0;
+}
+Dict::Dict(const Dict& otherItem)
+{
+	count = otherItem.count;
+	keyIndex = otherItem.keyIndex;
+}
+int Dict::getIndex()
+{
+	return keyIndex;
+}
+void Dict::incrementIndex()
+{
+	keyIndex++;
+}
 void Dict::insertPair(char* theKey,char* theValue)
 {
 	    int theIndex;
-	    theIndex = getIndex();
+	    theIndex = 1;
 	    char *keyptr,*valueptr;
-	    keyptr=(char*)emalloc(sizeof(char)*200);
+	    keyptr=(char*)malloc(sizeof(char)*200);
 	    strcpy(keyptr,theKey);
 	    keys[theIndex]=keyptr;
-	    valueptr=(char*)emalloc(sizeof(char)*200);
+	    valueptr=(char*)malloc(sizeof(char)*200);
 	    strcpy(valueptr,theValue);
 	    values[theIndex]=valueptr;
 	    incrementIndex();
 }
 char* Dict::printDict()
 {
-	char* buf;
-	buf = output;
 	int theIndex;
-	theIndex--;
-	theIndex = getIndex();
-	buf += sprintf(output,"DICT: ");
-	theIndex -= 1;
-	for (int i=theIndex;i>=0;i--)
+	theIndex = this->getIndex();
+	this->output=(char*)malloc(sizeof(char)*100);
+	for (int i=0;i<theIndex;i++)
 	{
-		buf += sprintf(buf," |%s => %s| ",keys[i],values[i]);
+		sprintf(this->output,"%s",values[i]);
+		break;
 	}
-	return output;
+	return this->output;
 }

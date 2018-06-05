@@ -1,8 +1,12 @@
 #include "stackitem.h"
 
+
+void StackItem::initialize()
+{
+}
 void StackItem::initializeTuple()
 {
-	someTuple = (Tuple*)malloc(sizeof(Tuple));
+	this->someTuple = new Tuple();
 }
 void StackItem::getString(char* theCharString)
 {
@@ -10,7 +14,9 @@ void StackItem::getString(char* theCharString)
 }
 void StackItem::initializeDict()
 {
-	someDict = (Dict*)emalloc(sizeof(Dict));
+	this->someDict = new Dict();
+	this->someDict->output=(char*)malloc(sizeof(char)*200);
+	this->someDict->keys=(char**)malloc(sizeof(char*)*50);
 }
 void StackItem::insertDictPair(char* theKey,char* theValue)
 {
@@ -30,23 +36,25 @@ int StackItem::getIndex()
 }
 char* StackItem::getModuleName()
 {
-	return someTuple->moduleName;
+	return this->moduleName;
 }
 void StackItem::setModuleName(char *theModuleName)
 {
-	moduleName=theModuleName;
+	this->moduleName=(char*)malloc(sizeof(char)*100);
+	strcpy(this->moduleName,theModuleName);
 }
 void StackItem::setClassName(char *theClassName)
 {
-	className=theClassName;
+	this->className=(char*)malloc(sizeof(char)*100);
+	strcpy(this->className,theClassName);
 }
 char* StackItem::getClassName()
 {
-	return someTuple->className;
+	return this->className;
 }
 char* StackItem::getDict()
 {
-	return someDict->printDict();
+	return this->someDict->printDict();
 }
 void StackItem::freeMemory()
 {
