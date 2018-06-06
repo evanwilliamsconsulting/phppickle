@@ -14,15 +14,15 @@ int PHPZope::returnValue() {
 }
 stack<StackItem>& PHPZope::retrieveCurrentStack()
 {
-	this->newStackItem = new StackItem();
-	this->currentStack.push(*this->newStackItem);
+	//this->newStackItem = new StackItem();
+	//this->currentStack.push(*this->newStackItem);
 	//__asm__("int3");
 	return this->currentStack;
 }
 vector<StackItem>& PHPZope::retrieveCurrentMemo()
 {
-	this->newMemoItem = new StackItem();
-	this->theMemo.push_back(*this->newMemoItem);
+	//this->newMemoItem = new StackItem();
+	//this->theMemo.push_back(*this->newMemoItem);
 	return this->theMemo;
 }
 int PHPZope::retrieveStackDepth() {
@@ -62,7 +62,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 
 	/* fetch the data : retrieve all the rows in the result set */
 
-	this->currentStack = theStack;
+	//this->currentStack = theStack;
 	Pickle *myPickler = new Pickle();
 	int num = 0;
 	std::stringstream parse(state2);
@@ -111,8 +111,8 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 			ptrStackItem->someString=(char*)malloc(sizeof(char*)*100);
 			strcpy(ptrStackItem->someString,buf);
 	    	        theStack.push(*ptrStackItem);
-	            	//result = (Opcode::fnGLOBAL1)(infile,theString,it,*ptrStackItem,theStack,theMemo);
-	            	result = (currentOpcode->opfunc)(infile,theString,it,*ptrStackItem,theStack,theMemo);
+	            	result = (Opcode::fnGLOBAL1)(infile,theString,it,*ptrStackItem,theStack,theMemo);
+	            	//result = (currentOpcode->opfunc)(infile,theString,it,*ptrStackItem,theStack,theMemo);
 			getline(infile,theString);
 			it = theString.begin();
 			someChar = *it++;
@@ -141,7 +141,7 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 		    ptrStackItem->initialize();
 		    ptrStackItem->opcode = someChar;
 		    ptrStackItem->theMark = 0;
-		    ptrStackItem->lastMark = lastMark;
+		    //ptrStackItem->lastMark = lastMark;
 		    ptrStackItem->someString=(char*)malloc(sizeof(char)*100); 
 		    if (saveString==0)
 		    {
@@ -203,9 +203,9 @@ int PHPZope::retrieve_state(ifstream& infile,string& state2,stack<StackItem>& th
 			    strcpy(buf,ptrStackItem->someString);
 			    ptrStackItem = &theStack.top();
 			}
-		    }
+		}
 	} while ( *it != '\000' && it != theString.end() && (result == 0 || result == 2 || result == 3 || result == 4 || result == 5));
-
+		    		    
 	printf("\n");
 	return 0;
 } // retrieve_state()

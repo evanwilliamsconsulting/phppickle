@@ -337,7 +337,7 @@ int Opcode::fnSTRING(ifstream &instream,std::string str1,std::string::iterator &
 #ifdef USE_OLD_MALLOC
 	theItem->someString=(char*)malloc(sizeof(char)*(len+1));
 #else
-	//theItem->someString=(char*)emalloc(sizeof(char)*(len+1));
+	theItem->someString=(char*)emalloc(sizeof(char)*(len+1));
 #endif
 	theItem->hasString = 0;
 	strcpy(theItem->someString,buf);
@@ -346,7 +346,7 @@ int Opcode::fnSTRING(ifstream &instream,std::string str1,std::string::iterator &
 #else
 	efree(buf);
 #endif
-	return 0;
+	return 1;
 }
 // push string; counted binary string argument
 int Opcode::fnBINSTRING(ifstream &instream,std::string str1,std::string::iterator &it1,StackItem &theStackItem,stack<StackItem>& theStack,vector<StackItem>& theMemo)
@@ -477,7 +477,7 @@ int Opcode::fnGLOBAL(ifstream &instream,std::string str1,std::string::iterator &
 	strcpy(moduleItem->someString,buf);
 	int retval;
 	retval = 3;
-	if (0 == strcmp("copy_reg",buf))
+	if (0 == strcmp("ccopy_reg",buf))
 	{
 	    moduleItem->opcode='*';
 	    isNewObj = 1;
@@ -671,14 +671,14 @@ int Opcode::fnPUT(ifstream &instream,std::string str1,std::string::iterator &it1
 	// Push new Class onto the Stack
 	StackItem *putItem,*prevItem;
 	putItem= &theStack.top();
-	//putItem->someInt = atoi(theInt);
+	putItem->someInt = atoi(theInt);
 	// Find current Stack Depth
 	
 	// POP THE STACK, because PUT goes into the Memo
 	// Memo is the static stack in the stackitem structure
 	// What opcode also uses Memo? setitem
 	theStack.pop();
-        //theMemo.push_back(theStack.top());
+        theMemo.push_back(theStack.top());
 
 #ifdef USE_OLD_MALLOC
 	newItem = (StackItem*)malloc(sizeof(StackItem));
@@ -721,6 +721,7 @@ int Opcode::fnLONG_BINPUT(ifstream &instream,std::string str1,std::string::itera
 // add key+value pair to dict
 int Opcode::fnSETITEM(ifstream &instream,std::string str1,std::string::iterator &it1,StackItem &theStackItem,stack<StackItem>& theStack,vector<StackItem>& theMemo)
 {
+	return 1;
 	char *ptrKey;
 	char *bufKey;
 	int lenKey;
@@ -799,6 +800,7 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
 {
 	// Everything since the last mark becomes the tuple
 	// What is a tuple?
+	return 1;
 	StackItem *theItem,*tupleItem;
 	int len;
 	int index;
@@ -828,12 +830,14 @@ int Opcode::fnTUPLE(ifstream &instream,std::string str1,std::string::iterator &i
 	// What we did here was to pull the top of the stack off,
 	// And assume that it was a Tuple.  It was not a Tuple!
 	// For Now We Note that TUPLE exists!
+/*
 	tupleItem = new StackItem();
 	tupleItem->initializeTuple();
 	tupleItem->setModuleName(moduleName);
 	tupleItem->setClassName(className);
 	tupleItem->setIndex(0);
 	it1++;
+*/
 	return 0;
 }
 // push empty tuple
@@ -1065,6 +1069,7 @@ int Opcode::oprLONG_BINPUT(zval* subarray,StackItem* stackitem, int depth) {
 int Opcode::oprSETITEM(zval* subarray,StackItem* stackitem, int depth) {  
 }
 int Opcode::oprTUPLE(zval* subarray,StackItem* stackitem, int depth) {   
+	return 0;
 	char somestring[100];
         char *moduleName,*className;
 
