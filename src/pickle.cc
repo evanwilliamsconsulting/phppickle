@@ -333,6 +333,7 @@ int Opcode::fnSTRING(ifstream &instream,std::string str1,std::string::iterator &
 	     it1++;
 	     forward++;
 	}
+	*ptr = '\0';
 	it1++;
 #ifdef USE_OLD_MALLOC
 	theItem->someString=(char*)malloc(sizeof(char)*(len+1));
@@ -680,13 +681,14 @@ int Opcode::fnPUT(ifstream &instream,std::string str1,std::string::iterator &it1
 	theStack.pop();
         theMemo.push_back(theStack.top());
 
+
 #ifdef USE_OLD_MALLOC
 	newItem = (StackItem*)malloc(sizeof(StackItem));
 #else
 	newItem = (StackItem*)emalloc(sizeof(StackItem));
 #endif
 	newItem->opcode = 'p';
-	newItem->someInt = atoi(theInt);
+	newItem->someInt = 1;
 
 	theStack.push(*newItem);
 	
